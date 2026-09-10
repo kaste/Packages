@@ -409,7 +409,7 @@ variables:
     | (`{1})[^`](?:[^`]|(?!`{1})`+[^`])*(`{1})(?!`)  # 1 backtick,  followed by at least one non backtick character, followed by (                          at least one non backtick character) at least once, followed by exactly 1 backtick
     )
 
-  # https://spec.commonmark.org/0.30/#left-flanking-delimiter-run
+  # https://spec.commonmark.org/0.31.2/#left-flanking-delimiter-run
   bold_italic_asterisk_begin: |-
     (?x:
          (\*\*)(\*) {{no_space_nor_punct}}
@@ -441,11 +441,21 @@ variables:
   escapes: \\[-+*/!"#$%&'(),.:;<=>?@\[\\\]^_`{|}~]
 
   no_escape_behind: (?<![^\\]\\)(?<![\\]{3})
-  # not followed by Unicode whitespace and not followed by a Unicode punctuation character
-  no_space_nor_punct: (?![\s*\p{P}])
-  # not followed by Unicode whitespace and followed by a Unicode punctuation character
-  no_space_but_punct: (?=[[^\s*]&&\p{P}])
-
+  # CommonMark treats Unicode punctuation and symbols alike as punctuation.
+  unicode_punctuation: '[\p{P}\p{S}]'
+  # not followed by Unicode whitespace or punctuation
+  no_space_nor_punct: (?![\s*\p{P}\p{S}])
+  # not followed by Unicode whitespace and followed by Unicode punctuation
+  no_space_but_punct: (?=[^\s*])(?={{unicode_punctuation}})
+  # asterisk at the start of a right-flanking delimiter run
+  asterisk_can_close: |-
+    (?x:
+      (?:(?<![\s*])|(?<=\\\*))
+      (?:
+        (?<!{{unicode_punctuation}})
+      | (?=\*+(?!\*)(?:[\s\p{P}\p{S}]|$))
+      )
+    )
   # BOL for ST specific newline treatment or unicode whitespace
   wspace: (?:^|\s+)
   # EOL, optionally preceded by whitespace
@@ -2751,30 +2761,62 @@ contexts:
 ###[ INLINE: EMPHASIS ]#######################################################
 
   bold:
-    # https://spec.commonmark.org/0.30/#emphasis-and-strong-emphasis
+    - include: bold-open
+
+  bold-open:
+    # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
+    - match: (?={{bold_italic_asterisk_begin}})
+      branch_point: bold-italic-asterisk
+      branch:
+        - bold-italic-asterisk-open
+        - no-bold-italic-asterisk
+    - match: (?={{bold_asterisk_begin}})
+      branch_point: bold-asterisk
+      branch:
+        - bold-asterisk-open
+        - no-bold-asterisk
+    - match: (?=\b(__)(_)(?![_\s]))
+      branch_point: bold-italic-underscore
+      branch:
+        - bold-italic-underscore-open
+        - no-bold-italic-underscore
+    - match: (?=\b__(?=\S)(?!_[_\s]))
+      branch_point: bold-underscore
+      branch:
+        - bold-underscore-open
+        - no-bold-underscore
+
+  bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
       captures:
         1: punctuation.definition.bold.begin.markdown
         2: markup.italic.markdown punctuation.definition.italic.begin.markdown
         3: punctuation.definition.bold.begin.markdown
         4: markup.italic.markdown punctuation.definition.italic.begin.markdown
-      push: bold-italic-asterisk
+      set: bold-italic-asterisk
+
+  bold-asterisk-open:
     - match: '{{bold_asterisk_begin}}'
       scope: punctuation.definition.bold.begin.markdown
-      push: bold-asterisk
+      set: bold-asterisk
+
+  bold-italic-underscore-open:
     - match: \b(__)(_)(?![_\s])
       captures:
         1: punctuation.definition.bold.begin.markdown
         2: markup.italic.markdown punctuation.definition.italic.begin.markdown
-      push: bold-italic-underscore
+      set: bold-italic-underscore
+
+  bold-underscore-open:
     - match: \b__(?=\S)(?!_[_\s])
       scope: punctuation.definition.bold.begin.markdown
-      push: bold-underscore
+      set: bold-underscore
 
   bold-asterisk:
     - meta_scope: markup.bold.markdown
+    - include: bold-asterisk-end
     - match: '{{wspace}}\*{2,}'
-    - match: \*\*
+    - match: '{{asterisk_can_close}}\*\*'
       scope: punctuation.definition.bold.end.markdown
       pop: 1
     # Consume the underscore that has no corresponding underscore before the closing bold
@@ -2784,6 +2826,7 @@ contexts:
 
   bold-underscore:
     - meta_scope: markup.bold.markdown
+    - include: bold-underscore-end
     - match: '{{wspace}}_{2,}'
     - match: __(?=_*\b)
       scope: punctuation.definition.bold.end.markdown
@@ -2796,6 +2839,7 @@ contexts:
   bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
+    - include: bold-italic-asterisk-end
     - match: '{{wspace}}\*+'
     - match: (\*)(\*\*)
       captures:
@@ -2813,6 +2857,7 @@ contexts:
 
   bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
+    - include: bold-italic-asterisk-end
     - match: '{{wspace}}\*{3,}'
     - match: \*\*
       scope: markup.bold.markdown punctuation.definition.bold.end.markdown
@@ -2821,6 +2866,7 @@ contexts:
 
   italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
+    - include: bold-italic-asterisk-end
     - match: '{{wspace}}\*{3,}'
     - match: \*(?!\*[^\s*])
       scope: markup.italic.markdown punctuation.definition.italic.end.markdown
@@ -2830,6 +2876,7 @@ contexts:
   bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
+    - include: bold-italic-underscore-end
     - match: '{{wspace}}_+'
     - match: (_)(__)(?=_*\b)
       captures:
@@ -2847,6 +2894,7 @@ contexts:
 
   bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
+    - include: bold-italic-underscore-end
     - match: '{{wspace}}_{3,}'
     - match: __(?=_*\b)
       scope: markup.bold.markdown punctuation.definition.bold.end.markdown
@@ -2855,6 +2903,7 @@ contexts:
 
   italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
+    - include: bold-italic-underscore-end
     - match: '{{wspace}}_{3,}'
     - match: _(?=_*\b)
       scope: markup.italic.markdown punctuation.definition.italic.end.markdown
@@ -2867,24 +2916,43 @@ contexts:
     - include: strikethrough
 
   italic:
+    - include: italic-open
+    - match: '[*_]+'
+
+  italic-open:
+    - match: (?={{italic_asterisk_begin}})
+      branch_point: italic-asterisk
+      branch:
+        - italic-asterisk-open
+        - no-italic-asterisk
+    - match: (?=\b_(?=\S)(?!_))
+      branch_point: italic-underscore
+      branch:
+        - italic-underscore-open
+        - no-italic-underscore
+
+  italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
       scope: punctuation.definition.italic.begin.markdown
-      push: italic-asterisk
+      set: italic-asterisk
+
+  italic-underscore-open:
     - match: \b_(?=\S)(?!_)
       scope: punctuation.definition.italic.begin.markdown
-      push: italic-underscore
-    - match: '[*_]+'
+      set: italic-underscore
 
   italic-asterisk:
     - meta_scope: markup.italic.markdown
+    - include: italic-asterisk-end
     - match: '{{wspace}}\*(?!\*)'
-    - match: \*(?!\*[^\s*])
+    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
       scope: punctuation.definition.italic.end.markdown
       pop: 1
     - include: italic-common
 
   italic-underscore:
     - meta_scope: markup.italic.markdown
+    - include: italic-underscore-end
     - match: '{{wspace}}_(?!_)'
     - match: _(?=_*\b)
       scope: punctuation.definition.italic.end.markdown
@@ -2894,6 +2962,7 @@ contexts:
   italic-common:
     - include: emphasis-common
     - include: bold
+    - include: italic-open
     - include: strikethrough
 
   strikethrough:
@@ -2913,12 +2982,55 @@ contexts:
     - include: bold
     - include: italic
 
+  bold-asterisk-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: bold-asterisk
+
+  bold-underscore-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: bold-underscore
+
+  bold-italic-asterisk-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: bold-italic-asterisk
+
+  bold-italic-underscore-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: bold-italic-underscore
+
+  italic-asterisk-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: italic-asterisk
+
+  italic-underscore-end:
+    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+      fail: italic-underscore
+
+  no-bold-italic-asterisk:
+    - match: \*
+      pop: 1
+
+  no-bold-asterisk:
+    - match: \*
+      pop: 1
+
+  no-bold-italic-underscore:
+    - match: _
+      pop: 1
+
+  no-bold-underscore:
+    - match: _
+      pop: 1
+
+  no-italic-asterisk:
+    - match: \*
+      pop: 1
+
+  no-italic-underscore:
+    - match: _
+      pop: 1
+
   emphasis-common:
-    - match: '{{setext_heading_escape}}'
-      pop: 1
-    - match: ^{{wspace_eol}}
-      scope: invalid.illegal.non-terminated.bold-italic.markdown
-      pop: 1
     - include: paragraph-end
     - include: hard-line-breaks
     - include: images
