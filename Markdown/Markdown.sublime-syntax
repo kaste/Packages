@@ -2944,10 +2944,7 @@ contexts:
 
   strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: emphasis-common
     - include: bold
     - include: italic
@@ -3167,10 +3164,7 @@ contexts:
 
   block-quote-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: block-quote-emphasis-common
     - include: block-quote-bold
     - include: block-quote-italic
@@ -3388,10 +3382,7 @@ contexts:
 
   nested-block-quote-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: nested-block-quote-emphasis-common
     - include: nested-block-quote-bold
     - include: nested-block-quote-italic
@@ -3609,10 +3600,7 @@ contexts:
 
   list-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: list-emphasis-common
     - include: list-bold
     - include: list-italic
@@ -3824,10 +3812,7 @@ contexts:
 
   footnote-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: footnote-emphasis-common
     - include: footnote-bold
     - include: footnote-italic
@@ -4039,10 +4024,7 @@ contexts:
 
   block-quote-footnote-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: block-quote-footnote-emphasis-common
     - include: block-quote-footnote-bold
     - include: block-quote-footnote-italic
@@ -4260,10 +4242,7 @@ contexts:
 
   line-strikethrough-content:
     - meta_scope: markup.strikethrough.markdown-gfm
-    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
-      scope: punctuation.definition.strikethrough.end.markdown
-      pop: 1
-    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
+    - include: strikethrough-body
     - include: line-emphasis-common
     - include: line-bold
     - include: line-italic
@@ -4384,6 +4363,12 @@ contexts:
     - match: _(?=_*\b)
       scope: punctuation.definition.italic.end.markdown
       pop: 1
+
+  strikethrough-body:
+    - match: ~~(?:(?!~)|(?=~~}|~>))  # 2x ~ maybe followed by ~> or ~~}
+      scope: punctuation.definition.strikethrough.end.markdown
+      pop: 1
+    - match: ~+(?:(?!~)|(?=~~}|~>))  # any number of ~ maybe followed by ~> or ~~}
 
 ###[ INLINE: IMAGES ]#########################################################
 
