@@ -144,7 +144,8 @@ def transform_contexts(template: str, context_names: list[str], variant: Variant
         )
 
     generic_end = "{{emphasis_end}}"
-    container_end = f"{variant.termination}|{{{{emphasis_eof}}}}"
+    end_variable = variant.prefix.replace("-", "_") + "_emphasis_end"
+    container_end = "{{" + end_variable + "}}"
     transformed = transformed.replace(generic_end, container_end)
     common_includes = "".join(
         f"    - include: {context}\n" for context in variant.common_includes

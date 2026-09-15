@@ -431,6 +431,12 @@ variables:
   # EOF after a newline is indistinguishable from a multiline continuation.
   emphasis_eof: (?<!\n)\z
   emphasis_end: '{{setext_heading_escape}}|{{paragraph_end}}|{{emphasis_eof}}'
+  block_quote_emphasis_end: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+  nested_block_quote_emphasis_end: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+  list_emphasis_end: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+  footnote_emphasis_end: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+  block_quote_footnote_emphasis_end: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+  line_emphasis_end: '$|{{emphasis_eof}}'
 
   # Links
   # =====
@@ -3170,27 +3176,27 @@ contexts:
     - include: block-quote-italic
 
   block-quote-bold-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-bold-asterisk
 
   block-quote-bold-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-bold-underscore
 
   block-quote-bold-italic-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-bold-italic-asterisk
 
   block-quote-bold-italic-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-bold-italic-underscore
 
   block-quote-italic-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-italic-asterisk
 
   block-quote-italic-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_emphasis_end}}'
       fail: block-quote-italic-underscore
 
   block-quote-emphasis-common:
@@ -3391,27 +3397,27 @@ contexts:
     - include: nested-block-quote-italic
 
   nested-block-quote-bold-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-bold-asterisk
 
   nested-block-quote-bold-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-bold-underscore
 
   nested-block-quote-bold-italic-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-bold-italic-asterisk
 
   nested-block-quote-bold-italic-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-bold-italic-underscore
 
   nested-block-quote-italic-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-italic-asterisk
 
   nested-block-quote-italic-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{nested_block_quote_emphasis_end}}'
       fail: nested-block-quote-italic-underscore
 
   nested-block-quote-emphasis-common:
@@ -3612,27 +3618,27 @@ contexts:
     - include: list-italic
 
   list-bold-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-bold-asterisk
 
   list-bold-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-bold-underscore
 
   list-bold-italic-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-bold-italic-asterisk
 
   list-bold-italic-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-bold-italic-underscore
 
   list-italic-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-italic-asterisk
 
   list-italic-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
+    - match: '{{list_emphasis_end}}'
       fail: list-italic-underscore
 
   list-emphasis-common:
@@ -3827,27 +3833,27 @@ contexts:
     - include: footnote-italic
 
   footnote-bold-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-bold-asterisk
 
   footnote-bold-underscore-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-bold-underscore
 
   footnote-bold-italic-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-bold-italic-asterisk
 
   footnote-bold-italic-underscore-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-bold-italic-underscore
 
   footnote-italic-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-italic-asterisk
 
   footnote-italic-underscore-end:
-    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{footnote_emphasis_end}}'
       fail: footnote-italic-underscore
 
   footnote-emphasis-common:
@@ -4042,27 +4048,27 @@ contexts:
     - include: block-quote-footnote-italic
 
   block-quote-footnote-bold-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-bold-asterisk
 
   block-quote-footnote-bold-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-bold-underscore
 
   block-quote-footnote-bold-italic-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-bold-italic-asterisk
 
   block-quote-footnote-bold-italic-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-bold-italic-underscore
 
   block-quote-footnote-italic-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-italic-asterisk
 
   block-quote-footnote-italic-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
+    - match: '{{block_quote_footnote_emphasis_end}}'
       fail: block-quote-footnote-italic-underscore
 
   block-quote-footnote-emphasis-common:
@@ -4263,27 +4269,27 @@ contexts:
     - include: line-italic
 
   line-bold-asterisk-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-bold-asterisk
 
   line-bold-underscore-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-bold-underscore
 
   line-bold-italic-asterisk-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-bold-italic-asterisk
 
   line-bold-italic-underscore-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-bold-italic-underscore
 
   line-italic-asterisk-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-italic-asterisk
 
   line-italic-underscore-end:
-    - match: '$|{{emphasis_eof}}'
+    - match: '{{line_emphasis_end}}'
       fail: line-italic-underscore
 
   line-emphasis-common:
