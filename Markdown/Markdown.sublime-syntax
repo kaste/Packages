@@ -2701,10 +2701,7 @@ contexts:
   inlines:
     - include: hard-line-breaks
     - include: emphasis
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: inline-common
 
   emphasis:
     - include: bold
@@ -2771,30 +2768,27 @@ contexts:
 ###[ INLINE: EMPHASIS ]#######################################################
 
   bold:
-    - include: bold-open
-
-  bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: bold-italic-asterisk
       branch:
         - bold-italic-asterisk-open
-        - no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: bold-asterisk
       branch:
         - bold-asterisk-open
-        - no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: bold-italic-underscore
       branch:
         - bold-italic-underscore-open
-        - no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: bold-underscore
       branch:
         - bold-underscore-open
-        - no-bold-underscore
+        - no-emphasis
 
   bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -2825,37 +2819,20 @@ contexts:
   bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: bold-common
 
   bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: bold-common
 
   bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: italic-after-bold-italic-asterisk
@@ -2868,31 +2845,20 @@ contexts:
   bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: bold-common
 
   italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: italic-common
 
   bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: italic-after-bold-italic-underscore
@@ -2905,19 +2871,13 @@ contexts:
   bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: bold-common
 
   italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: italic-common
 
   bold-common:
@@ -2934,12 +2894,12 @@ contexts:
       branch_point: italic-asterisk
       branch:
         - italic-asterisk-open
-        - no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: italic-underscore
       branch:
         - italic-underscore-open
-        - no-italic-underscore
+        - no-emphasis
 
   italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -2954,19 +2914,13 @@ contexts:
   italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: italic-common
 
   italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: italic-common
 
   italic-common:
@@ -3016,37 +2970,9 @@ contexts:
     - match: '{{emphasis_end}}'
       fail: italic-underscore
 
-  no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  no-bold-underscore:
-    - match: _
-      pop: 1
-
-  no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  no-italic-underscore:
-    - match: _
-      pop: 1
-
   emphasis-common:
     - include: paragraph-end
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: CONTAINER EMPHASIS ]#########################################
 
@@ -3057,10 +2983,7 @@ contexts:
   block-quote-inlines:
     - include: hard-line-breaks
     - include: block-quote-emphasis
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: inline-common
 
   block-quote-emphasis:
     - include: block-quote-bold
@@ -3068,30 +2991,27 @@ contexts:
     - include: block-quote-strikethrough
 
   block-quote-bold:
-    - include: block-quote-bold-open
-
-  block-quote-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: block-quote-bold-italic-asterisk
       branch:
         - block-quote-bold-italic-asterisk-open
-        - block-quote-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: block-quote-bold-asterisk
       branch:
         - block-quote-bold-asterisk-open
-        - block-quote-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: block-quote-bold-italic-underscore
       branch:
         - block-quote-bold-italic-underscore-open
-        - block-quote-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: block-quote-bold-underscore
       branch:
         - block-quote-bold-underscore-open
-        - block-quote-no-bold-underscore
+        - no-emphasis
 
   block-quote-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -3122,37 +3042,20 @@ contexts:
   block-quote-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: block-quote-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: block-quote-bold-common
 
   block-quote-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: block-quote-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: block-quote-bold-common
 
   block-quote-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: block-quote-italic-after-bold-italic-asterisk
@@ -3165,31 +3068,20 @@ contexts:
   block-quote-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: block-quote-bold-common
 
   block-quote-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: block-quote-italic-common
 
   block-quote-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: block-quote-italic-after-bold-italic-underscore
@@ -3202,19 +3094,13 @@ contexts:
   block-quote-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: block-quote-bold-common
 
   block-quote-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: block-quote-italic-common
 
   block-quote-bold-common:
@@ -3231,12 +3117,12 @@ contexts:
       branch_point: block-quote-italic-asterisk
       branch:
         - block-quote-italic-asterisk-open
-        - block-quote-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: block-quote-italic-underscore
       branch:
         - block-quote-italic-underscore-open
-        - block-quote-no-italic-underscore
+        - no-emphasis
 
   block-quote-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -3251,19 +3137,13 @@ contexts:
   block-quote-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: block-quote-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: block-quote-italic-common
 
   block-quote-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: block-quote-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: block-quote-italic-common
 
   block-quote-italic-common:
@@ -3313,49 +3193,18 @@ contexts:
     - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-italic-underscore
 
-  block-quote-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  block-quote-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  block-quote-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-no-italic-underscore:
-    - match: _
-      pop: 1
-
   block-quote-emphasis-common:
     - match: '{{blockquote_paragraph_end}}'
       pop: 1
     - include: block-quote-punctuation-content
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: NESTED BLOCK QUOTE EMPHASIS ]###################################
 
   nested-block-quote-inlines:
     - include: hard-line-breaks
     - include: nested-block-quote-emphasis
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: inline-common
 
   nested-block-quote-emphasis:
     - include: nested-block-quote-bold
@@ -3363,30 +3212,27 @@ contexts:
     - include: nested-block-quote-strikethrough
 
   nested-block-quote-bold:
-    - include: nested-block-quote-bold-open
-
-  nested-block-quote-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: nested-block-quote-bold-italic-asterisk
       branch:
         - nested-block-quote-bold-italic-asterisk-open
-        - nested-block-quote-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: nested-block-quote-bold-asterisk
       branch:
         - nested-block-quote-bold-asterisk-open
-        - nested-block-quote-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: nested-block-quote-bold-italic-underscore
       branch:
         - nested-block-quote-bold-italic-underscore-open
-        - nested-block-quote-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: nested-block-quote-bold-underscore
       branch:
         - nested-block-quote-bold-underscore-open
-        - nested-block-quote-no-bold-underscore
+        - no-emphasis
 
   nested-block-quote-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -3417,37 +3263,20 @@ contexts:
   nested-block-quote-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: nested-block-quote-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: nested-block-quote-bold-common
 
   nested-block-quote-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: nested-block-quote-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: nested-block-quote-bold-common
 
   nested-block-quote-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: nested-block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: nested-block-quote-italic-after-bold-italic-asterisk
@@ -3460,31 +3289,20 @@ contexts:
   nested-block-quote-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: nested-block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: nested-block-quote-bold-common
 
   nested-block-quote-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: nested-block-quote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: nested-block-quote-italic-common
 
   nested-block-quote-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: nested-block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: nested-block-quote-italic-after-bold-italic-underscore
@@ -3497,19 +3315,13 @@ contexts:
   nested-block-quote-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: nested-block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: nested-block-quote-bold-common
 
   nested-block-quote-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: nested-block-quote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: nested-block-quote-italic-common
 
   nested-block-quote-bold-common:
@@ -3526,12 +3338,12 @@ contexts:
       branch_point: nested-block-quote-italic-asterisk
       branch:
         - nested-block-quote-italic-asterisk-open
-        - nested-block-quote-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: nested-block-quote-italic-underscore
       branch:
         - nested-block-quote-italic-underscore-open
-        - nested-block-quote-no-italic-underscore
+        - no-emphasis
 
   nested-block-quote-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -3546,19 +3358,13 @@ contexts:
   nested-block-quote-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: nested-block-quote-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: nested-block-quote-italic-common
 
   nested-block-quote-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: nested-block-quote-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: nested-block-quote-italic-common
 
   nested-block-quote-italic-common:
@@ -3608,49 +3414,18 @@ contexts:
     - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-italic-underscore
 
-  nested-block-quote-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  nested-block-quote-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  nested-block-quote-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  nested-block-quote-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  nested-block-quote-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  nested-block-quote-no-italic-underscore:
-    - match: _
-      pop: 1
-
   nested-block-quote-emphasis-common:
     - match: '{{blockquote_nested_paragraph_end}}'
       pop: 1
     - include: block-quote-nested-punctuation-content
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: LIST EMPHASIS ]#################################################
 
   list-inlines:
     - include: hard-line-breaks
     - include: list-emphasis
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: inline-common
 
   list-emphasis:
     - include: list-bold
@@ -3658,30 +3433,27 @@ contexts:
     - include: list-strikethrough
 
   list-bold:
-    - include: list-bold-open
-
-  list-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: list-bold-italic-asterisk
       branch:
         - list-bold-italic-asterisk-open
-        - list-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: list-bold-asterisk
       branch:
         - list-bold-asterisk-open
-        - list-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: list-bold-italic-underscore
       branch:
         - list-bold-italic-underscore-open
-        - list-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: list-bold-underscore
       branch:
         - list-bold-underscore-open
-        - list-no-bold-underscore
+        - no-emphasis
 
   list-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -3712,37 +3484,20 @@ contexts:
   list-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: list-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: list-bold-common
 
   list-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: list-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: list-bold-common
 
   list-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: list-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: list-italic-after-bold-italic-asterisk
@@ -3755,31 +3510,20 @@ contexts:
   list-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: list-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: list-bold-common
 
   list-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: list-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: list-italic-common
 
   list-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: list-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: list-italic-after-bold-italic-underscore
@@ -3792,19 +3536,13 @@ contexts:
   list-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: list-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: list-bold-common
 
   list-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: list-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: list-italic-common
 
   list-bold-common:
@@ -3821,12 +3559,12 @@ contexts:
       branch_point: list-italic-asterisk
       branch:
         - list-italic-asterisk-open
-        - list-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: list-italic-underscore
       branch:
         - list-italic-underscore-open
-        - list-no-italic-underscore
+        - no-emphasis
 
   list-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -3841,19 +3579,13 @@ contexts:
   list-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: list-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: list-italic-common
 
   list-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: list-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: list-italic-common
 
   list-italic-common:
@@ -3903,38 +3635,10 @@ contexts:
     - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-italic-underscore
 
-  list-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  list-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  list-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  list-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  list-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  list-no-italic-underscore:
-    - match: _
-      pop: 1
-
   list-emphasis-common:
     - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}'
       pop: 1
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: FOOTNOTE EMPHASIS ]#############################################
 
@@ -3944,30 +3648,27 @@ contexts:
     - include: footnote-strikethrough
 
   footnote-bold:
-    - include: footnote-bold-open
-
-  footnote-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: footnote-bold-italic-asterisk
       branch:
         - footnote-bold-italic-asterisk-open
-        - footnote-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: footnote-bold-asterisk
       branch:
         - footnote-bold-asterisk-open
-        - footnote-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: footnote-bold-italic-underscore
       branch:
         - footnote-bold-italic-underscore-open
-        - footnote-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: footnote-bold-underscore
       branch:
         - footnote-bold-underscore-open
-        - footnote-no-bold-underscore
+        - no-emphasis
 
   footnote-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -3998,37 +3699,20 @@ contexts:
   footnote-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: footnote-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: footnote-bold-common
 
   footnote-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: footnote-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: footnote-bold-common
 
   footnote-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: footnote-italic-after-bold-italic-asterisk
@@ -4041,31 +3725,20 @@ contexts:
   footnote-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: footnote-bold-common
 
   footnote-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: footnote-italic-common
 
   footnote-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: footnote-italic-after-bold-italic-underscore
@@ -4078,19 +3751,13 @@ contexts:
   footnote-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: footnote-bold-common
 
   footnote-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: footnote-italic-common
 
   footnote-bold-common:
@@ -4107,12 +3774,12 @@ contexts:
       branch_point: footnote-italic-asterisk
       branch:
         - footnote-italic-asterisk-open
-        - footnote-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: footnote-italic-underscore
       branch:
         - footnote-italic-underscore-open
-        - footnote-no-italic-underscore
+        - no-emphasis
 
   footnote-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -4127,19 +3794,13 @@ contexts:
   footnote-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: footnote-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: footnote-italic-common
 
   footnote-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: footnote-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: footnote-italic-common
 
   footnote-italic-common:
@@ -4189,38 +3850,10 @@ contexts:
     - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-italic-underscore
 
-  footnote-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  footnote-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  footnote-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  footnote-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  footnote-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  footnote-no-italic-underscore:
-    - match: _
-      pop: 1
-
   footnote-emphasis-common:
     - match: '{{footnote_paragraph_end}}'
       pop: 1
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: BLOCK QUOTE FOOTNOTE EMPHASIS ]#################################
 
@@ -4230,30 +3863,27 @@ contexts:
     - include: block-quote-footnote-strikethrough
 
   block-quote-footnote-bold:
-    - include: block-quote-footnote-bold-open
-
-  block-quote-footnote-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: block-quote-footnote-bold-italic-asterisk
       branch:
         - block-quote-footnote-bold-italic-asterisk-open
-        - block-quote-footnote-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: block-quote-footnote-bold-asterisk
       branch:
         - block-quote-footnote-bold-asterisk-open
-        - block-quote-footnote-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: block-quote-footnote-bold-italic-underscore
       branch:
         - block-quote-footnote-bold-italic-underscore-open
-        - block-quote-footnote-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: block-quote-footnote-bold-underscore
       branch:
         - block-quote-footnote-bold-underscore-open
-        - block-quote-footnote-no-bold-underscore
+        - no-emphasis
 
   block-quote-footnote-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -4284,37 +3914,20 @@ contexts:
   block-quote-footnote-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: block-quote-footnote-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: block-quote-footnote-bold-common
 
   block-quote-footnote-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: block-quote-footnote-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: block-quote-footnote-bold-common
 
   block-quote-footnote-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: block-quote-footnote-italic-after-bold-italic-asterisk
@@ -4327,31 +3940,20 @@ contexts:
   block-quote-footnote-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: block-quote-footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: block-quote-footnote-bold-common
 
   block-quote-footnote-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-footnote-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: block-quote-footnote-italic-common
 
   block-quote-footnote-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: block-quote-footnote-italic-after-bold-italic-underscore
@@ -4364,19 +3966,13 @@ contexts:
   block-quote-footnote-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: block-quote-footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: block-quote-footnote-bold-common
 
   block-quote-footnote-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: block-quote-footnote-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: block-quote-footnote-italic-common
 
   block-quote-footnote-bold-common:
@@ -4393,12 +3989,12 @@ contexts:
       branch_point: block-quote-footnote-italic-asterisk
       branch:
         - block-quote-footnote-italic-asterisk-open
-        - block-quote-footnote-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: block-quote-footnote-italic-underscore
       branch:
         - block-quote-footnote-italic-underscore-open
-        - block-quote-footnote-no-italic-underscore
+        - no-emphasis
 
   block-quote-footnote-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -4413,19 +4009,13 @@ contexts:
   block-quote-footnote-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: block-quote-footnote-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: block-quote-footnote-italic-common
 
   block-quote-footnote-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: block-quote-footnote-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: block-quote-footnote-italic-common
 
   block-quote-footnote-italic-common:
@@ -4475,49 +4065,18 @@ contexts:
     - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-italic-underscore
 
-  block-quote-footnote-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-footnote-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-footnote-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  block-quote-footnote-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  block-quote-footnote-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  block-quote-footnote-no-italic-underscore:
-    - match: _
-      pop: 1
-
   block-quote-footnote-emphasis-common:
     - match: '{{blockquote_footnote_paragraph_end}}'
       pop: 1
     - include: block-quote-punctuation-content
-    - include: hard-line-breaks
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: emphasis-inline-common
 
 ###[ GENERATED: SINGLE LINE EMPHASIS ]##########################################
 
   line-inlines:
     - include: hard-line-breaks
     - include: line-emphasis
-    - include: images
-    - include: literals
-    - include: links
-    - include: markups
+    - include: inline-common
 
   line-emphasis:
     - include: line-bold
@@ -4525,30 +4084,27 @@ contexts:
     - include: line-strikethrough
 
   line-bold:
-    - include: line-bold-open
-
-  line-bold-open:
     # https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis
     - match: (?={{bold_italic_asterisk_begin}})
       branch_point: line-bold-italic-asterisk
       branch:
         - line-bold-italic-asterisk-open
-        - line-no-bold-italic-asterisk
+        - no-emphasis
     - match: (?={{bold_asterisk_begin}})
       branch_point: line-bold-asterisk
       branch:
         - line-bold-asterisk-open
-        - line-no-bold-asterisk
+        - no-emphasis
     - match: (?=\b(__)(_)(?![_\s]))
       branch_point: line-bold-italic-underscore
       branch:
         - line-bold-italic-underscore-open
-        - line-no-bold-italic-underscore
+        - no-emphasis
     - match: (?=\b__(?=\S)(?!_[_\s]))
       branch_point: line-bold-underscore
       branch:
         - line-bold-underscore-open
-        - line-no-bold-underscore
+        - no-emphasis
 
   line-bold-italic-asterisk-open:
     - match: '{{bold_italic_asterisk_begin}}'
@@ -4579,37 +4135,20 @@ contexts:
   line-bold-asterisk:
     - meta_scope: markup.bold.markdown
     - include: line-bold-asterisk-end
-    - match: '{{wspace}}\*{2,}'
-    - match: '{{asterisk_can_close}}\*\*'
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the underscore that has no corresponding underscore before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+    - include: bold-asterisk-body
     - include: line-bold-common
 
   line-bold-underscore:
     - meta_scope: markup.bold.markdown
     - include: line-bold-underscore-end
-    - match: '{{wspace}}_{2,}'
-    - match: __(?=_*\b)
-      scope: punctuation.definition.bold.end.markdown
-      pop: 1
-    # Consume the asterisk that has no corresponding asterisk before the closing bold
-    # punctuation on the same line, as it won't be treated as italic by CommonMark
-    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+    - include: bold-underscore-body
     - include: line-bold-common
 
   line-bold-italic-asterisk:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: line-bold-italic-asterisk-end
-    - match: '{{wspace}}\*+'
-    - match: (\*)(\*\*)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-asterisk-close
     - match: \*\*
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: line-italic-after-bold-italic-asterisk
@@ -4622,31 +4161,20 @@ contexts:
   line-bold-after-bold-italic-asterisk:
     - meta_content_scope: markup.bold.markdown
     - include: line-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*\*
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-asterisk-close
     - include: line-bold-common
 
   line-italic-after-bold-italic-asterisk:
     - meta_content_scope: markup.italic.markdown
     - include: line-bold-italic-asterisk-end
-    - match: '{{wspace}}\*{3,}'
-    - match: \*(?!\*[^\s*])
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-asterisk-close
     - include: line-italic-common
 
   line-bold-italic-underscore:
     - meta_scope: markup.bold.markdown
     - meta_content_scope: markup.italic.markdown
     - include: line-bold-italic-underscore-end
-    - match: '{{wspace}}_+'
-    - match: (_)(__)(?=_*\b)
-      captures:
-        1: markup.italic.markdown punctuation.definition.italic.end.markdown
-        2: punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-italic-underscore-close
     - match: __\b
       scope: markup.italic.markdown punctuation.definition.bold.end.markdown
       set: line-italic-after-bold-italic-underscore
@@ -4659,19 +4187,13 @@ contexts:
   line-bold-after-bold-italic-underscore:
     - meta_content_scope: markup.bold.markdown
     - include: line-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: __(?=_*\b)
-      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
-      pop: 1
+    - include: bold-after-bold-italic-underscore-close
     - include: line-bold-common
 
   line-italic-after-bold-italic-underscore:
     - meta_content_scope: markup.italic.markdown
     - include: line-bold-italic-underscore-end
-    - match: '{{wspace}}_{3,}'
-    - match: _(?=_*\b)
-      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-after-bold-italic-underscore-close
     - include: line-italic-common
 
   line-bold-common:
@@ -4688,12 +4210,12 @@ contexts:
       branch_point: line-italic-asterisk
       branch:
         - line-italic-asterisk-open
-        - line-no-italic-asterisk
+        - no-emphasis
     - match: (?=\b_(?=\S)(?!_))
       branch_point: line-italic-underscore
       branch:
         - line-italic-underscore-open
-        - line-no-italic-underscore
+        - no-emphasis
 
   line-italic-asterisk-open:
     - match: '{{italic_asterisk_begin}}'
@@ -4708,19 +4230,13 @@ contexts:
   line-italic-asterisk:
     - meta_scope: markup.italic.markdown
     - include: line-italic-asterisk-end
-    - match: '{{wspace}}\*(?!\*)'
-    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-asterisk-body
     - include: line-italic-common
 
   line-italic-underscore:
     - meta_scope: markup.italic.markdown
     - include: line-italic-underscore-end
-    - match: '{{wspace}}_(?!_)'
-    - match: _(?=_*\b)
-      scope: punctuation.definition.italic.end.markdown
-      pop: 1
+    - include: italic-underscore-body
     - include: line-italic-common
 
   line-italic-common:
@@ -4770,40 +4286,98 @@ contexts:
     - match: '$|{{emphasis_eof}}'
       fail: line-italic-underscore
 
-  line-no-bold-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  line-no-bold-asterisk:
-    - match: \*
-      pop: 1
-
-  line-no-bold-italic-underscore:
-    - match: _
-      pop: 1
-
-  line-no-bold-underscore:
-    - match: _
-      pop: 1
-
-  line-no-italic-asterisk:
-    - match: \*
-      pop: 1
-
-  line-no-italic-underscore:
-    - match: _
-      pop: 1
-
   line-emphasis-common:
     - match: '$'
       pop: 1
-    - include: hard-line-breaks
+    - include: emphasis-inline-common
+
+###[ END GENERATED: CONTAINER EMPHASIS ]#####################################
+
+###[ INLINE: EMPHASIS HELPERS ]###############################################
+
+  inline-common:
     - include: images
     - include: literals
     - include: links
     - include: markups
 
-###[ END GENERATED: CONTAINER EMPHASIS ]#####################################
+  emphasis-inline-common:
+    - include: hard-line-breaks
+    - include: inline-common
+
+  no-emphasis:
+    - match: '[*_]'
+      pop: 1
+
+  bold-asterisk-body:
+    - match: '{{wspace}}\*{2,}'
+    - match: '{{asterisk_can_close}}\*\*'
+      scope: punctuation.definition.bold.end.markdown
+      pop: 1
+    # Consume the underscore that has no corresponding underscore before the closing bold
+    # punctuation on the same line, as it won't be treated as italic by CommonMark
+    - match: \b_(?=[^\s_])(?=[^*_]*\*\*)
+
+  bold-underscore-body:
+    - match: '{{wspace}}_{2,}'
+    - match: __(?=_*\b)
+      scope: punctuation.definition.bold.end.markdown
+      pop: 1
+    # Consume the asterisk that has no corresponding asterisk before the closing bold
+    # punctuation on the same line, as it won't be treated as italic by CommonMark
+    - match: \*(?=[^\s*])(?=[^*_]*__\b)
+
+  bold-italic-asterisk-close:
+    - match: '{{wspace}}\*+'
+    - match: (\*)(\*\*)
+      captures:
+        1: markup.italic.markdown punctuation.definition.italic.end.markdown
+        2: punctuation.definition.bold.end.markdown
+      pop: 1
+
+  bold-after-bold-italic-asterisk-close:
+    - match: '{{wspace}}\*{3,}'
+    - match: \*\*
+      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
+      pop: 1
+
+  italic-after-bold-italic-asterisk-close:
+    - match: '{{wspace}}\*{3,}'
+    - match: \*(?!\*[^\s*])
+      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
+      pop: 1
+
+  bold-italic-underscore-close:
+    - match: '{{wspace}}_+'
+    - match: (_)(__)(?=_*\b)
+      captures:
+        1: markup.italic.markdown punctuation.definition.italic.end.markdown
+        2: punctuation.definition.bold.end.markdown
+      pop: 1
+
+  bold-after-bold-italic-underscore-close:
+    - match: '{{wspace}}_{3,}'
+    - match: __(?=_*\b)
+      scope: markup.bold.markdown punctuation.definition.bold.end.markdown
+      pop: 1
+
+  italic-after-bold-italic-underscore-close:
+    - match: '{{wspace}}_{3,}'
+    - match: _(?=_*\b)
+      scope: markup.italic.markdown punctuation.definition.italic.end.markdown
+      pop: 1
+
+  italic-asterisk-body:
+    - match: '{{wspace}}\*(?!\*)'
+    - match: '{{asterisk_can_close}}\*(?!\*[^\s*])'
+      scope: punctuation.definition.italic.end.markdown
+      pop: 1
+
+  italic-underscore-body:
+    - match: '{{wspace}}_(?!_)'
+    - match: _(?=_*\b)
+      scope: punctuation.definition.italic.end.markdown
+      pop: 1
 
 ###[ INLINE: IMAGES ]#########################################################
 

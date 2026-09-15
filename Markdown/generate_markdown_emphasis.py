@@ -105,10 +105,7 @@ def generate_prelude(variant: Variant) -> str:
                 f"  {variant.prefix}-inlines:",
                 "    - include: hard-line-breaks",
                 f"    - include: {variant.prefix}-emphasis",
-                "    - include: images",
-                "    - include: literals",
-                "    - include: links",
-                "    - include: markups",
+                "    - include: inline-common",
                 "",
             )
         )
