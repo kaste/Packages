@@ -428,6 +428,10 @@ variables:
     | \B \* {{no_space_but_punct}}
     )
 
+  # EOF after a newline is indistinguishable from a multiline continuation.
+  emphasis_eof: (?<!\n)\z
+  emphasis_end: '{{setext_heading_escape}}|{{paragraph_end}}|{{emphasis_eof}}'
+
   # Links
   # =====
 
@@ -2989,27 +2993,27 @@ contexts:
     - include: italic
 
   bold-asterisk-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: bold-asterisk
 
   bold-underscore-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: bold-underscore
 
   bold-italic-asterisk-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: bold-italic-asterisk
 
   bold-italic-underscore-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: bold-italic-underscore
 
   italic-asterisk-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: italic-asterisk
 
   italic-underscore-end:
-    - match: '{{setext_heading_escape}}|{{paragraph_end}}|(?<!\n)\z'
+    - match: '{{emphasis_end}}'
       fail: italic-underscore
 
   no-bold-italic-asterisk:
@@ -3286,27 +3290,27 @@ contexts:
     - include: block-quote-italic
 
   block-quote-bold-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-bold-asterisk
 
   block-quote-bold-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-bold-underscore
 
   block-quote-bold-italic-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-bold-italic-asterisk
 
   block-quote-bold-italic-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-bold-italic-underscore
 
   block-quote-italic-asterisk-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-italic-asterisk
 
   block-quote-italic-underscore-end:
-    - match: '{{blockquote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-italic-underscore
 
   block-quote-no-bold-italic-asterisk:
@@ -3581,27 +3585,27 @@ contexts:
     - include: nested-block-quote-italic
 
   nested-block-quote-bold-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-bold-asterisk
 
   nested-block-quote-bold-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-bold-underscore
 
   nested-block-quote-bold-italic-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-bold-italic-asterisk
 
   nested-block-quote-bold-italic-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-bold-italic-underscore
 
   nested-block-quote-italic-asterisk-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-italic-asterisk
 
   nested-block-quote-italic-underscore-end:
-    - match: '{{blockquote_nested_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_nested_paragraph_end}}|{{emphasis_eof}}'
       fail: nested-block-quote-italic-underscore
 
   nested-block-quote-no-bold-italic-asterisk:
@@ -3876,27 +3880,27 @@ contexts:
     - include: list-italic
 
   list-bold-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-bold-asterisk
 
   list-bold-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-bold-underscore
 
   list-bold-italic-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-bold-italic-asterisk
 
   list-bold-italic-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-bold-italic-underscore
 
   list-italic-asterisk-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-italic-asterisk
 
   list-italic-underscore-end:
-    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|(?<!\n)\z'
+    - match: '{{list_paragraph_end}}|{{list_setext_heading_escape}}|{{emphasis_eof}}'
       fail: list-italic-underscore
 
   list-no-bold-italic-asterisk:
@@ -4162,27 +4166,27 @@ contexts:
     - include: footnote-italic
 
   footnote-bold-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-bold-asterisk
 
   footnote-bold-underscore-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-bold-underscore
 
   footnote-bold-italic-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-bold-italic-asterisk
 
   footnote-bold-italic-underscore-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-bold-italic-underscore
 
   footnote-italic-asterisk-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-italic-asterisk
 
   footnote-italic-underscore-end:
-    - match: '{{footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: footnote-italic-underscore
 
   footnote-no-bold-italic-asterisk:
@@ -4448,27 +4452,27 @@ contexts:
     - include: block-quote-footnote-italic
 
   block-quote-footnote-bold-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-bold-asterisk
 
   block-quote-footnote-bold-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-bold-underscore
 
   block-quote-footnote-bold-italic-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-bold-italic-asterisk
 
   block-quote-footnote-bold-italic-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-bold-italic-underscore
 
   block-quote-footnote-italic-asterisk-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-italic-asterisk
 
   block-quote-footnote-italic-underscore-end:
-    - match: '{{blockquote_footnote_paragraph_end}}|(?<!\n)\z'
+    - match: '{{blockquote_footnote_paragraph_end}}|{{emphasis_eof}}'
       fail: block-quote-footnote-italic-underscore
 
   block-quote-footnote-no-bold-italic-asterisk:
@@ -4743,27 +4747,27 @@ contexts:
     - include: line-italic
 
   line-bold-asterisk-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-bold-asterisk
 
   line-bold-underscore-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-bold-underscore
 
   line-bold-italic-asterisk-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-bold-italic-asterisk
 
   line-bold-italic-underscore-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-bold-italic-underscore
 
   line-italic-asterisk-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-italic-asterisk
 
   line-italic-underscore-end:
-    - match: '$|(?<!\n)\z'
+    - match: '$|{{emphasis_eof}}'
       fail: line-italic-underscore
 
   line-no-bold-italic-asterisk:

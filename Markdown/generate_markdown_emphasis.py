@@ -146,8 +146,8 @@ def transform_contexts(template: str, context_names: list[str], variant: Variant
             flags=re.MULTILINE,
         )
 
-    generic_end = "{{setext_heading_escape}}|{{paragraph_end}}|(?<!\\n)\\z"
-    container_end = f"{variant.termination}|(?<!\\n)\\z"
+    generic_end = "{{emphasis_end}}"
+    container_end = f"{variant.termination}|{{{{emphasis_eof}}}}"
     transformed = transformed.replace(generic_end, container_end)
     common_includes = "".join(
         f"    - include: {context}\n" for context in variant.common_includes
